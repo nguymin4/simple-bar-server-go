@@ -1,7 +1,8 @@
 package internal
 
 import (
-	"log"
+	"encoding/json"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -9,7 +10,7 @@ import (
 	"time"
 )
 
-func getAppBadges() string {
+func getAppBadges() (string, error) {
 	homeDir, _ := os.UserHomeDir()
 	scriptFolder := filepath.Join(homeDir, ".config/uebersicht/simple-bar-server")
 	script := `
@@ -22,16 +23,28 @@ func getAppBadges() string {
 
 	stdout, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Println("Error", err.Error(), string(stdout))
-		return "{}"
+		return string(stdout), err
 	}
-	return strings.TrimSpace(string(stdout))
+	return strings.TrimSpace(string(stdout)), nil
 }
 
 func ScheduleGetAppBadges(appBadgesRefreshSec int64) {
 	tick := time.Tick(time.Duration(appBadgesRefreshSec) * time.Second)
 	for range tick {
-		output := getAppBadges()
-		log.Println(output)
+		output, err := getAppBadges()
+		if err != nil {
+			slog.Warn("Failed to update app badges", "error", err, "output", output)
+			continue
+		}
+
+		data := map[string]any{}
+		err = json.Unmarshal([]byte(output), &data)
+		if err != nil {
+			slog.Error("Failed to update app badges", "error", err)
+			return
+		}
+
+		payload := map[string]any{"action": "refresh", "data": data}
+		sendToWSClient("app-badges", "", payload)
 	}
 }
