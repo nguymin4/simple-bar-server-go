@@ -12,10 +12,10 @@ import (
 
 func getAppBadges() (string, error) {
 	homeDir, _ := os.UserHomeDir()
-	scriptFolder := filepath.Join(homeDir, ".config/uebersicht/simple-bar-server")
+	scriptFolder := filepath.Join(homeDir, ".config/uebersicht/simple-bar-server-go/python")
 	script := `
 		source .env/bin/activate \
-		&& python src/app_badges.py
+		&& python app_badges.py
 	`
 
 	cmd := exec.Command("bash", "-c", script)
@@ -33,15 +33,15 @@ func ScheduleGetAppBadges(appBadgesRefreshSec int64) {
 	for range tick {
 		output, err := getAppBadges()
 		if err != nil {
-			slog.Warn("Failed to update app badges", "error", err, "output", output)
+			slog.Warn("Failed to get app badges", "error", err, "output", output)
 			continue
 		}
 
 		data := map[string]any{}
 		err = json.Unmarshal([]byte(output), &data)
 		if err != nil {
-			slog.Error("Failed to update app badges", "error", err)
-			return
+			slog.Error("Failed to parse app badges", "error", err)
+			continue
 		}
 
 		payload := map[string]any{"action": "refresh", "data": data}
