@@ -46,5 +46,6 @@ func ScheduleGetAppBadges(appBadgesRefreshSec int64) {
 
 		payload := map[string]any{"action": "refresh", "data": data}
 		sendToWSClient("app-badges", "", payload)
+		slog.Info("Finished updating app badges")
 	}
 }
