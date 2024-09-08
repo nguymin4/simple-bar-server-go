@@ -11,7 +11,8 @@ import (
 
 const (
 	appBadgesRefreshSec = 2
-	wsPort              = 9001
+	httpPort            = 7776
+	wsPort              = 7777
 )
 
 func startServer(router *mux.Router, port int) {
@@ -25,6 +26,7 @@ func startServer(router *mux.Router, port int) {
 }
 
 func main() {
+	go startServer(internal.CreateHTTPRouter(), httpPort)
 	go startServer(internal.CreateWebsocketRouter(), wsPort)
 	go internal.ScheduleGetAppBadges(appBadgesRefreshSec)
 	select {}

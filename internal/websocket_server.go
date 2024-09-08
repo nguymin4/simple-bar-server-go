@@ -15,6 +15,9 @@ var wsMap = &WsMap{
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(_ *http.Request) bool {
+		return true
+	},
 }
 
 func handleWebsocket(res http.ResponseWriter, req *http.Request) {
