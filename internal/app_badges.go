@@ -14,7 +14,7 @@ func getAppBadges() (string, error) {
 	homeDir, _ := os.UserHomeDir()
 	scriptFolder := filepath.Join(homeDir, ".config/uebersicht/simple-bar-server-go/python")
 	script := `
-		source .env/bin/activate \
+		source .venv/bin/activate \
 		&& python app_badges.py
 	`
 
